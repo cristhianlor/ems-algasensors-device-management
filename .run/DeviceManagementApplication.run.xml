@@ -7,7 +7,7 @@
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/device-management" />
     <extension name="coverage">
       <pattern>
-        <option name="PATTERN" value="com.algaworks.algasensors.device.management.*" />
+        <option name="PATTERN" value="com.algaworks.algasensors.device.management.common.*" />
         <option name="ENABLED" value="true" />
       </pattern>
     </extension>
