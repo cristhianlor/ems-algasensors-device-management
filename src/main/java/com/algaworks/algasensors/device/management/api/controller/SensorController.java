@@ -7,6 +7,7 @@ import com.algaworks.algasensors.device.management.domain.model.Sensor;
 import com.algaworks.algasensors.device.management.domain.model.SensorId;
 import com.algaworks.algasensors.device.management.domain.repository.SensorRepository;
 import io.hypersistence.tsid.TSID;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -38,7 +39,7 @@ public class SensorController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public SensorOutput create(@RequestBody SensorInput sensorInput) {
+    public SensorOutput create(@Valid @RequestBody SensorInput sensorInput) {
         Sensor sensor = Sensor.builder()
                 .id(new SensorId(IdGenerator.generateTSID()))
                 .name(sensorInput.getName())
@@ -54,6 +55,31 @@ public class SensorController {
         return convertToModel(sensor);
     }
 
+    @PutMapping("{sensorId}")
+    public SensorOutput update(@PathVariable TSID sensorId, @Valid @RequestBody SensorInput sensorInput) {
+        Sensor sensor = sensorRepository.findById(new SensorId(sensorId))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        sensor.setName(sensorInput.getName());
+        sensor.setIp(sensorInput.getIp());
+        sensor.setLocation(sensorInput.getLocation());
+        sensor.setProtocol(sensorInput.getProtocol());
+        sensor.setModel(sensorInput.getModel());
+
+        sensor = sensorRepository.saveAndFlush(sensor);
+
+        return convertToModel(sensor);
+    }
+
+    @DeleteMapping("{sensorId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable TSID sensorId) {
+        Sensor sensor = sensorRepository.findById(new SensorId(sensorId))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        sensorRepository.delete(sensor);
+    }
+
     private SensorOutput convertToModel(Sensor sensor) {
         return SensorOutput.builder()
                 .id(sensor.getId().getValue())
@@ -62,7 +88,7 @@ public class SensorController {
                 .location(sensor.getLocation())
                 .protocol(sensor.getProtocol())
                 .model(sensor.getModel())
-                .enabled(false)
+                .enabled(sensor.getEnabled())
                 .build();
     }
 
